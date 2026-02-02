@@ -281,6 +281,7 @@ if status is-interactive
     # Interactive aliases
     alias ls="eza --color=always --git --no-filesize --icons=always --no-time --no-user --no-permissions"
     alias cd="z"
+    alias cld="claude --dangerously-skip-permissions"
 end
 
 # FZF setup
