@@ -345,6 +345,171 @@ function _fzf_compgen_dir
 end
 FISHEOF
 
+  # Git abbreviations (standalone, no OMF)
+  mkdir -p ~/.config/fish/conf.d
+  cat > ~/.config/fish/conf.d/git.fish << 'FISHEOF'
+# Git abbreviations (standalone, no OMF dependency)
+
+# Helper functions
+function __git.current_branch -d "Output git's current branch name"
+  begin
+    git symbolic-ref HEAD; or \
+    git rev-parse --short HEAD; or return
+  end 2>/dev/null | sed -e 's|^refs/heads/||'
+end
+
+function __git.default_branch -d "Detect default branch (main or master)"
+  command git rev-parse --git-dir &>/dev/null; or return
+  if set -l default_branch (command git config --get init.defaultBranch)
+    and command git show-ref -q --verify refs/heads/{$default_branch}
+    echo $default_branch
+  else if command git show-ref -q --verify refs/heads/main
+    echo main
+  else
+    echo master
+  end
+end
+
+# Core
+abbr -a -g g       git
+abbr -a -g ga      git add
+abbr -a -g gaa     git add --all
+abbr -a -g gau     git add --update
+abbr -a -g gapa    git add --patch
+abbr -a -g gap     git apply
+
+# Branch
+abbr -a -g gb      git branch -vv
+abbr -a -g gba     git branch -a -v
+abbr -a -g gban    git branch -a -v --no-merged
+abbr -a -g gbd     git branch -d
+abbr -a -g gbD     git branch -D
+abbr -a -g gbl     git blame -b -w
+
+# Commit
+abbr -a -g gc      git commit -v
+abbr -a -g 'gc!'   git commit -v --amend
+abbr -a -g 'gcn!'  git commit -v --no-edit --amend
+abbr -a -g gca     git commit -v -a
+abbr -a -g 'gca!'  git commit -v -a --amend
+abbr -a -g 'gcan!' git commit -v -a --no-edit --amend
+abbr -a -g gcm     git commit -m
+abbr -a -g gcam    git commit -a -m
+abbr -a -g gcfx    git commit --fixup
+
+# Config / Clone / Clean
+abbr -a -g gcf     git config --list
+abbr -a -g gcl     git clone
+abbr -a -g gclean  git clean -di
+
+# Cherry-pick
+abbr -a -g gcp     git cherry-pick
+abbr -a -g gcpa    git cherry-pick --abort
+abbr -a -g gcpc    git cherry-pick --continue
+
+# Diff
+abbr -a -g gd      git diff
+abbr -a -g gdca    git diff --cached
+abbr -a -g gds     git diff --stat
+abbr -a -g gdsc    git diff --stat --cached
+abbr -a -g gdw     git diff --word-diff
+abbr -a -g gdwc    git diff --word-diff --cached
+
+# Fetch
+abbr -a -g gf      git fetch
+abbr -a -g gfa     git fetch --all --prune
+abbr -a -g gfo     git fetch origin
+
+# Pull
+abbr -a -g gl      git pull
+abbr -a -g gll     git pull origin
+abbr -a -g glr     git pull --rebase
+
+# Log
+abbr -a -g glg     git log --stat
+abbr -a -g glgg    git log --graph
+abbr -a -g glo     git log --oneline --decorate --color
+abbr -a -g glog    git log --oneline --decorate --color --graph
+abbr -a -g gloga   git log --oneline --decorate --color --graph --all
+
+# Merge
+abbr -a -g gm      git merge
+
+# Push
+abbr -a -g gp      git push
+abbr -a -g 'gp!'   git push --force-with-lease
+abbr -a -g gpo     git push origin
+abbr -a -g 'gpo!'  git push --force-with-lease origin
+abbr -a -g gpv     git push --no-verify
+abbr -a -g 'gpv!'  git push --no-verify --force-with-lease
+
+# Remote
+abbr -a -g gr      git remote -vv
+abbr -a -g gra     git remote add
+abbr -a -g grpo    git remote prune origin
+abbr -a -g grrm    git remote remove
+abbr -a -g grset   git remote set-url
+abbr -a -g grv     git remote -v
+
+# Rebase
+abbr -a -g grb     git rebase
+abbr -a -g grba    git rebase --abort
+abbr -a -g grbc    git rebase --continue
+abbr -a -g grbi    git rebase --interactive
+abbr -a -g grbs    git rebase --skip
+abbr -a -g gup     git pull --rebase
+abbr -a -g gupa    git pull --rebase --autostash
+
+# Reset / Restore
+abbr -a -g grh     git reset
+abbr -a -g grhh    git reset --hard
+abbr -a -g grs     git restore
+abbr -a -g grst    git restore --staged
+abbr -a -g grm     git rm
+abbr -a -g grmc    git rm --cached
+
+# Revert
+abbr -a -g grev    git revert
+
+# Show
+abbr -a -g gsh     git show
+
+# Status
+abbr -a -g gsb     git status -sb
+abbr -a -g gss     git status -s
+abbr -a -g gst     git status
+
+# Stash
+abbr -a -g gsta    git stash
+abbr -a -g gstd    git stash drop
+abbr -a -g gstl    git stash list
+abbr -a -g gstp    git stash pop
+abbr -a -g gsts    git stash show --text
+
+# Submodule
+abbr -a -g gsu     git submodule update
+abbr -a -g gsur    git submodule update --recursive
+abbr -a -g gsuri   git submodule update --recursive --init
+
+# Switch
+abbr -a -g gsw     git switch
+abbr -a -g gswc    git switch --create
+
+# Checkout
+abbr -a -g gco     git checkout
+abbr -a -g gcb     git checkout -b
+
+# Tags
+abbr -a -g gtv     git tag
+abbr -a -g gts     git tag -s
+
+# Worktree
+abbr -a -g gwt     git worktree
+abbr -a -g gwta    git worktree add
+abbr -a -g gwtls   git worktree list
+abbr -a -g gwtrm   git worktree remove
+FISHEOF
+
   success "Fish shell configured"
 }
 
