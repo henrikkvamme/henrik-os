@@ -1,0 +1,12 @@
+[core]
+	excludesFile = ~/.gitignore_global
+	autocrlf = input
+[user]
+	email = henrik.halvorsen.kvamme@gmail.com
+	name = Henrik Kvamme
+[rerere]
+	enabled = true
+[column]
+	ui = auto
+[branch]
+	sort = -committerdate

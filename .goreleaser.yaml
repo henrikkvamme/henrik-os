@@ -1,0 +1,31 @@
+version: 2
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/henrikkvamme/henrik-os/cmd.version={{.Version}}
+
+archives:
+  - format: tar.gz
+
+brews:
+  - repository:
+      owner: henrikkvamme
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/henrikkvamme/henrik-os"
+    description: "Mac development environment setup CLI"
+    license: "MIT"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
