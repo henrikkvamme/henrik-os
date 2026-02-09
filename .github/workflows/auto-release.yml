@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -23,13 +26,6 @@ jobs:
             echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Bump patch version
-        id: bump
-        run: |
-          IFS='.' read -r major minor patch <<< "${{ steps.latest_tag.outputs.version }}"
-          new_version="v${major}.${minor}.$((patch + 1))"
-          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
-
       - name: Check if release needed
         id: check
         run: |
@@ -42,6 +38,14 @@ jobs:
             echo "needed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Bump patch version
+        if: steps.check.outputs.needed == 'true'
+        id: bump
+        run: |
+          IFS='.' read -r major minor patch <<< "${{ steps.latest_tag.outputs.version }}"
+          new_version="v${major}.${minor}.$((patch + 1))"
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+
       - name: Create and push tag
         if: steps.check.outputs.needed == 'true'
         run: |
@@ -49,3 +53,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "${{ steps.bump.outputs.new_version }}" -m "Release ${{ steps.bump.outputs.new_version }}"
           git push origin "${{ steps.bump.outputs.new_version }}"
+
+      - uses: actions/setup-go@v5
+        if: steps.check.outputs.needed == 'true'
+        with:
+          go-version: stable
+
+      - uses: goreleaser/goreleaser-action@v6
+        if: steps.check.outputs.needed == 'true'
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
