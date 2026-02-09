@@ -32,6 +32,13 @@ Examples:
   henrik-os install --all          # Everything, headless
   henrik-os install fish git       # Specific modules (auto-resolves deps)
   henrik-os install claude-config  # Just sync Claude Code config`,
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		var comps []string
+		for _, m := range module.All() {
+			comps = append(comps, m.ID()+"\t"+m.Description())
+		}
+		return comps, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if allFlag {
 			// Headless: all modules

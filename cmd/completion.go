@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +23,59 @@ var completionCmd = &cobra.Command{
 	Long: `Generate shell completion scripts for henrik-os.
 
 Without --install, prints the completion script to stdout.
-With --install, writes the script to the appropriate shell config directory.`,
+With --install, writes the script to the appropriate shell config directory.
+
+Use --install without a subcommand to auto-detect your shell:
+  henrik-os completion --install`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if !installFlag {
+			return cmd.Help()
+		}
+
+		shell := filepath.Base(os.Getenv("SHELL"))
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+
+		var path string
+		var generate func(*os.File) error
+
+		switch shell {
+		case "fish":
+			path = filepath.Join(home, ".config", "fish", "completions", "henrik-os.fish")
+			generate = func(f *os.File) error { return rootCmd.GenFishCompletion(f, true) }
+		case "bash":
+			path = filepath.Join(home, ".local", "share", "bash-completion", "completions", "henrik-os")
+			generate = func(f *os.File) error { return rootCmd.GenBashCompletionV2(f, true) }
+		case "zsh":
+			path = filepath.Join(home, ".zsh", "completions", "_henrik-os")
+			generate = func(f *os.File) error { return rootCmd.GenZshCompletion(f) }
+		default:
+			return fmt.Errorf("unsupported shell %q — use a subcommand: completion [fish|bash|zsh]", shell)
+		}
+
+		fmt.Fprintf(os.Stderr, "Detected shell: %s\n", shell)
+		fmt.Fprintf(os.Stderr, "Install completions to %s? [y/N] ", path)
+
+		reader := bufio.NewReader(os.Stdin)
+		answer, _ := reader.ReadString('\n')
+		if strings.TrimSpace(strings.ToLower(answer)) != "y" {
+			fmt.Fprintln(os.Stderr, "Aborted.")
+			return nil
+		}
+
+		if err := writeCompletion(path, generate); err != nil {
+			return err
+		}
+
+		if shell == "zsh" {
+			fmt.Fprintf(os.Stderr, "\nEnsure %s is in your fpath. Add this to ~/.zshrc:\n", filepath.Dir(path))
+			fmt.Fprintf(os.Stderr, "  fpath=(~/.zsh/completions $fpath)\n  autoload -Uz compinit && compinit\n")
+		}
+
+		return nil
+	},
 }
 
 func init() {

@@ -63,7 +63,7 @@ func (f *Fish) Install(w io.Writer) error {
 
 	// Write fish functions
 	functions := []string{
-		"y.fish", "b.fish", "fuck.fish", "hacker.fish",
+		"y.fish", "b.fish", "fuck.fish",
 		"_fzf_compgen_path.fish", "_fzf_compgen_dir.fish",
 	}
 	for _, fn := range functions {

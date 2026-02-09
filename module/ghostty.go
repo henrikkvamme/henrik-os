@@ -28,6 +28,12 @@ func (g *Ghostty) Install(w io.Writer) error {
 			return err
 		}
 	}
+	// Deploy hacker function (assumes fish shell)
+	hackerDest := filepath.Join(HomeDir(), ".config/fish/functions/hacker.fish")
+	if err := WriteEmbedded(w, &configs.FS, "fish/functions/hacker.fish", hackerDest, 0o644); err != nil {
+		return err
+	}
+
 	fmt.Fprintln(w, "  Ghostty configured")
 	return nil
 }
